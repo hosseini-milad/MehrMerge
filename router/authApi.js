@@ -2,12 +2,13 @@
 const { ErrorMessageBox } = require('admin-bro');
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
+var ObjectID = require('mongodb').ObjectID;
 var Kavenegar = require('kavenegar');
 const job = require('../model/job');
 const user = require('../model/user');
 var api = Kavenegar.KavenegarApi({
     apikey: process.env.SMS_API
-}); 
+});
 const User = require("../model/user");
 const userAddress = require('../model/userAddress');
 const userInfo = require('../model/userInfo');
@@ -17,6 +18,7 @@ const sendSmsUser = require('../AdminPanel/components/sendSms');
 const HesabFaApiCall = require('../AdminPanel/components/hesabFaApiCall')
 const CreateTask = require('../middleware/CreateTask');
 const CreateTaskSimple = require('../middleware/CreateTaskSimple');
+const ProfileAccess = require('../model/user/ProfileAccess');
 
 //ثبت نام و ورود با نام کاربری پسورد
 exports.registerApi = async (req, res) => {
@@ -65,6 +67,7 @@ exports.loginApi=async(req,res)=>{
     try {
       // Get user input
       const { phone, password } = req.body;
+      ////console.log((phone,password)
       // Validate user input
       if (!(phone && password)) {
         res.status(400).send({error:"اطلاعات وارد نشده است"});
@@ -254,7 +257,11 @@ exports.loginOTPApi=async(req,res)=>{
         return;
       }
       // Validate if user exist in our database
-      const user = await User.findOne({phone: phone });
+      const user = await User.findOne({phone: phone }).lean()
+      const accessData = user.profile?
+        await ProfileAccess.findOne({_id:ObjectID(user.profile)}):''
+      user.contractor = (accessData.profileName&&
+        accessData.profileName.includes('عامل'))?1:0
       if(user.active === "غیرفعال"){
         res.status(400).json("کاربر غیرفعال است")
         return
@@ -355,32 +362,18 @@ exports.userInfoSetApi=async(req, res) => {
 exports.userPassApi=async(req, res) => {
   //console.log(("UserPassApi")
 try{   
-  if(!req.body.oldpassword||!req.body.password){
-    res.status(400).json({error:"اطلاعات ورودی کافی نیست"});
-    return
-  }
   const data = { 
-    oldpassword:req.body.oldpassword,
-    password:req.body.password
+    password:await bcrypt.hash(req.body.password, 10)
   }
-  const users = await User.findOne({_id: req.headers["userid"] })
-  if(await bcrypt.compare(data.oldpassword, users.password)||
-    users.password == data.oldpassword){
-    const updateUserInfo= await User.updateOne({_id: req.headers["userid"]},
-      {$set:{password:await bcrypt.hash(data.password, 10)}})
-    res.status(200).json({updateuser:updateUserInfo,
-      message:"رمز عبور تغییر یافت"});
-  }
-  else{
-    res.status(400).json({error:"رمز عبور نامعتبر می باشد"});
-  }
+  //const users = await User.findOne({_id: req.headers["userid"] })
   ////console.log((users)
   //if(userData){
-    
+    const updateUserInfo= await User.updateOne({_id: req.headers["userid"]},{$set:data})
+    res.status(200).json({updateuser:updateUserInfo,pass:data.password});
  
 }
 catch(err){
-  res.status(400).json({err:err});
+  res.status(200).json({err:err});
 }
 }
 

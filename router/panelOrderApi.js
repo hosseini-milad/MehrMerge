@@ -41,6 +41,9 @@ router.post('/list',jsonParser,async (req,res)=>{
         status:req.body.status,
         customer:req.body.customer,
         brand:req.body.brand,
+        group:req.body.group,
+		contractor:req.body.contractor,
+		contractorId:req.body.contractorId,
         dateFrom:
             req.body.dateFrom?req.body.dateFrom[0]+"/"+
             req.body.dateFrom[1]+"/"+req.body.dateFrom[2]+" "+"00:00":
@@ -71,17 +74,28 @@ router.post('/list',jsonParser,async (req,res)=>{
     dateToEn.setHours(23, 59, 0, 0)
 
     const reportList = await OrderSchema.aggregate([
+	
         {$lookup:{
             from : "users", 
             localField: "userId", 
             foreignField: "_id", 
             as : "userInfo"
         }}, 
+        {$lookup:{
+            from : "users", 
+            localField: "contractor", 
+            foreignField: "cCode", 
+            as : "contractorInfo"
+        }}, 
         { $match:req.body.userId?{userId:ObjectID(req.body.userId)}:{}},
     { $match:data.status?{status:new RegExp('.*' + data.status + '.*')}:{status:{$not:{$regex:/^initial.*/}}}},
         { $match:data.orderNo?{stockOrderNo:new RegExp('.*' + data.orderNo + '.*')}:{}},
         { $match:data.brand?{brand:data.brand}:{}},
+		{ $match:data.group?{group:data.group}:{}},
         { $match:{stockOrderNo:{$ne:null}}},
+        { $match:data.contractor?data.contractor=="true"?
+			{contractor:{$exists:true}}:{contractor:{$exists:false}}:{}},
+        { $match:data.contractorId?{contractor:data.contractorId}:{}},
         { $match:!data.orderNo?{loadDate:{$gte:new Date(data.dateFrom)}}:{}},
         { $match:!data.orderNo?{loadDate:{$lte:new Date(data.dateTo)}}:{}},
         { $sort: {"loadDate":-1}},
@@ -160,11 +174,11 @@ router.post('/rxStatus',jsonParser,async(req,res)=>{
         const rxDataAccepted = findStatusCount(rxData,"accept");
         
         const rxDataQC = findStatusCount(rxData,"qc");
-        const rxDataInproduction = findStatusCount(rxData,"inproduction");
+        const rxDataInVehicle = findStatusCount(rxData,"inVehicle");
+        const rxDataOutVehicle = findStatusCount(rxData,"outVehicle");
         const rxDataFaktor = findStatusCount(rxData,"faktor");
         const rxDataSending = findStatusCount(rxData,"sending");
         const rxDataDelivered = findStatusCount(rxData,"delivered");
-        const rxDataStoreSent = findStatusCount(rxData,"storeSent");
         const rxDataCompleted = findStatusCount(rxData,"completed");
         const rxDataCancel = findStatusCount(rxData,"cancel");
         const rxDataHold = findStatusCount(rxData,"hold");
@@ -175,8 +189,8 @@ router.post('/rxStatus',jsonParser,async(req,res)=>{
             {status:"initial",count:rxDataInitial},
             {status:"inprogress",count:rxDataInprogress},
             {status:"accept",count:rxDataAccepted},
-            {status:"qc",count:rxDataQC},
-            {status:"inproduction",count:rxDataInproduction},
+            {status:"outVehicle",count:rxDataOutVehicle},
+            {status:"inVehicle",count:rxDataInVehicle},
             {status:"faktor",count:rxDataFaktor},
             {status:"sending",count:rxDataSending},
             {status:"delivered",count:rxDataDelivered},
@@ -198,8 +212,8 @@ const rxStatus=(orderList)=>{
         {status:"initial",count:0},
         {status:"inprogress",count:0},
         {status:"accept",count:0},
-        {status:"qc",count:0},
-        {status:"inproduction",count:0},
+        {status:"inVehicle",count:0},
+        {status:"outVehicle",count:0},
         {status:"faktor",count:0},
         {status:"sending",count:0},
         {status:"delivered",count:0},
@@ -207,6 +221,7 @@ const rxStatus=(orderList)=>{
         {status:"storeSent",count:0},
         {status:"hold",count:0},
         {status:"completed",count:0},
+        {status:"contractor",count:0},
         {status:"cancel",count:0}]
     for(var index=0;index<statusList.length;index++)
         statusList[index].count = 

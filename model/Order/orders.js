@@ -11,7 +11,10 @@ const OrdersSchema = new mongoose.Schema({
   ghabzIn:{ type: String },
   ghabzOut:{ type: String },
   cert:{ type: String },
-
+  contractor:{ type: String },
+  cStatus:{ type: String },
+  cReason:{ type: String },
+  
   stockOrderPrice:{type:String},
   credit:{type:String},
   freeCredit:{type:String},

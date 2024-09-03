@@ -59,6 +59,62 @@ router.post('/fetch-cart',auth, async (req,res)=>{
         res.status(500).json({message: error.message})
     }
 })
+router.post('/assign-order',auth, async (req,res)=>{
+    const userData = await users.findOne({_id:ObjectID(req.headers["userid"])})
+    const orderFull = await orders.find({contractor:userData.cCode}).lean()
+    var pageSize = req.body.pageSize?req.body.pageSize:"10";
+    var offset = req.body.offset?(parseInt(req.body.offset)):0;
+    const orderList = orderFull.slice(offset,
+        (parseInt(offset)+parseInt(pageSize))) 
+    for(var i=0;i<orderList.length;i++){
+        var orderRow = orderList[i]
+        var userDetail = await users.findOne({_id:ObjectID(orderRow.userId)})
+        var actions = []
+        var statusTitle = ""
+        if(orderRow.cStatus == "inprogress"){
+            statusTitle = "در انتظار تایید"
+            actions=[{title:"تایید",value:"accept"},{title:"لغو",value:"cancel"}]
+        }
+        if(orderRow.cStatus == "accept") statusTitle = "تایید شده"
+        if(orderRow.cStatus == "cancel") statusTitle = "لغو شده"
+        orderList[i].statusTitle = statusTitle
+        orderList[i].actions = actions
+        orderList[i].userDetail = userDetail
+    }
+    try{
+        res.json({data:orderList,size:orderFull.length,success:"200"})
+    }
+    catch(error){ 
+        res.status(500).json({message: error.message})
+    }
+}) 
+router.post('/update-contract-order',auth, async (req,res)=>{
+    const orderNo = req.body.orderNo
+    const status = req.body.status
+	const cReason =req.body.cReason
+    const orderResult = await orders.updateOne({stockOrderNo:orderNo},
+        {$set:{cStatus:status}})
+    if(status == "accept"){
+        await orders.updateOne({stockOrderNo:orderNo},
+            {$set:{status:"completed"}})
+        await tasks.updateOne({orderNo:orderNo},{$set:{done:true}})
+        }
+	if(status == "cancel"){
+		if(!cReason){
+			res.status(400).json({error:true,message: "لطفا دلیل لغو را ذکر کنید"})
+			return
+		}
+        await orders.updateOne({stockOrderNo:orderNo},
+            {$set:{status:"inprogress",cReason:cReason}})
+        await tasks.updateOne({orderNo:orderNo},{$set:{cancel:true}})
+        }
+    try{
+        res.json({data:orderResult,message:"سفارش بروز شد",success:"200"})
+    }
+    catch(error){ 
+        res.status(500).json({message: error.message})
+    }
+})
 router.post('/find-products',auth, async (req,res)=>{
     const search = req.body.search
         var filter =''
@@ -92,6 +148,7 @@ router.post('/update-cart',jsonParser, async (req,res)=>{
     try{
         const userData = await users.findOne({_id:userId})
         var status = "";
+        console.log(data)
         //const cartData = await cart.find({userId:userId})
         //const qCartData = await Cart.findOne({userId:userId})
         const repCart = await Cart.findOne({userId:userId,sku:data.sku})
@@ -162,10 +219,10 @@ router.post('/create-order',auth, async (req,res)=>{
         stockFaktor:cartData.carts,
         description:req.body.description,
         freeCredit:req.body.freeCredit,
-        credit:cartData.creditNeed,
+        credit:cartData.remainCredit,
         stockFaktorOrg:cartData.carts,
-        group:userData.group,
         status:"inprogress",
+		group:userData&&userData.group,
         date: Date.now(),
         loadDate:loadDate,
         loadDateOrg:loadDate

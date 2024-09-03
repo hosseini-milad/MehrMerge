@@ -72,7 +72,9 @@ const calcTasks=async(userId,crmCode)=>{
         {$addFields: { "customer_Id": { $convert: {input:"$customer" ,
         to:'objectId', onError:'',onNull:''}}}},
         {$lookup:{from : "customers", 
-            localField: "customer_Id", foreignField: "_id", as : "customerInfo"}}
+            localField: "customer_Id", foreignField: "_id", as : "customerInfo"}},
+        {$sort:{date:-1}},
+        {$limit:50}
     ])
     //const taskList = await tasks.find({crmCode:crmData._id})
     const columnOrder =crmData&&crmData.crmSteps
@@ -130,19 +132,35 @@ router.post('/update-tasks',auth,jsonParser,async (req,res)=>{
 })
 router.post('/update-tasks-status',auth,jsonParser,async (req,res)=>{
     const taskId = req.body._id?req.body._id:""
-    var status = req.body.status
+	if(!taskId){
+		res.status(400).json({error:true,message:"کد تسک ارسال نشده است"})
+		return
+	}
+    const contractor = req.body.contractor
+    var status = contractor?"contractor":req.body.status 
     const crmCode = req.body.crmCode
-    const changes = req.body.changeData
+    const changes = req.body.changeData?req.body.changeData:{}
     const crmData = await crmlist.findOne(crmCode?{crmCode:crmCode}:{})
+	if(!crmData){
+		res.status(400).json({error:true,message:"کد تسک ارسال نشCRM است"})
+		return
+	}
     const taskData = await tasks.findOne({_id:ObjectID(taskId)})
     const crmSteps = crmData.crmSteps
     const taskStatus = taskData.taskStep
-    var newStatus = '' 
+    var newStatus = ''
     var index = crmSteps.findIndex(item=>item.enTitle===taskStatus)
-    //console.log(index)
     var nextStep = findNext(index,status)
     newStatus = crmSteps[nextStep]
-   //console.log(newStatus)
+    if(contractor){
+		nextStep=6
+        newStatus={enTitle:"contractor"}
+    }
+	if(nextStep==-1){
+        res.status(400).json({message:"مشکلی رخ داده است",error:true})
+		return
+    }
+    console.log(newStatus)
     try{
         var sepidarAccept = 1
         var sepidarQuery = ''
@@ -165,13 +183,16 @@ router.post('/update-tasks-status',auth,jsonParser,async (req,res)=>{
         //console.log(sepidarQuery)
         if(sepidarAccept){
             await tasks.updateOne({_id:ObjectID(taskId)},
-            {$set:{taskStep:newStatus.enTitle,progressDate:Date.now()}})
+            {$set:{taskStep:newStatus.enTitle,query:sepidarQuery,
+                result:sepidarResult,progressDate:Date.now()}})
         }
-		
+
          
         const userId=req.headers["userid"]
         const updateOrder = await orders.updateOne({stockOrderNo:taskData.orderNo},
-        {$set:{...changes,status:newStatus.enTitle}});
+        {$set:{...changes,contractor,cStatus:contractor?"inprogress":"",
+            status:newStatus.enTitle}});
+        //console.log(updateOrder)
         const tasksList = await calcTasks(userId,crmCode)
        res.json({taskData:tasksList,message:taskId?"Task Updated":"Task Created",
         result:sepidarResult,sepidarQuery:sepidarQuery,userData:adminData})
@@ -188,8 +209,13 @@ const findNext=(index,status)=>{
     }
     if(status=="outVehicle")
         return(5)
-    if(status=="cancel"){
-        return(4)
+    if(status=="completed")
+        return(5)
+    if(status=="edit"){
+        return(1)
+    }
+	if(status=="contractor"){
+        return(-1)
     }
     else
         return(index+1)

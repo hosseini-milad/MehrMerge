@@ -103,8 +103,28 @@ router.post('/list',jsonParser,async (req,res)=>{
             userList[i].totalCredit = credit.credit
             userList[i].totalFob = credit.fob
         }
-       res.json({filter:userList,size:filter1Report.length,
+       res.json({filter:userList,size:filter1Report.length,allId,
             access:accessUnique,profiles:profiles,classes:classList})
+    }
+    catch(error){
+        res.status(500).json({message: error.message})
+    } 
+})
+router.post('/list-contract',jsonParser,async (req,res)=>{
+    const search = req.body.search
+    try{
+        const profileData = await ProfileAccess.findOne({profileName:/عامل/}).lean()
+		profileData.id = profileData&&profileData._id.toString()
+        console.log(profileData)
+
+        const userList = profileData?await user.aggregate([
+			{$match:{profile:profileData.id}},
+			{$match:search?{cName:new RegExp('.*' + search + '.*')}:{}},
+			{$limit:10}
+		]
+		):[]
+        
+       res.json({filter:userList})
     }
     catch(error){
         res.status(500).json({message: error.message})
@@ -265,14 +285,10 @@ router.post('/parse-list',jsonParser,async (req,res)=>{
         //const data = fs.readFileSync(url)
         //console.log(data)
         const workSheetsFromFile = xlsx.parse(
-            __dirname +"/../"+url); 
+            __dirname +"/../"+url);
         const data = workSheetsFromFile[0].data
         const meliCodeIndex = data[0].indexOf("کدملی")!==-1?
-            data[0].indexOf("کدملی"):
-            data[0].indexOf("کد ملی")
-        const testData = data[0] + " : index: "+meliCodeIndex
-        //data[0] = [ "کدملی", "مقدار تراکنش", "تعداد تراکنش‌های انجام شده", "مقدار تراکنش یارانه ای (کیلوگرم)", "تعداد تراکنش یارانه ای", "مقدار تراکنش غیر یارانه (کیلوگرم)", "تعداد تراکنش غیر یارانه ای" ]
-
+            data[0].indexOf("کدملی"):data[0].indexOf("کد ملی")
         //const creditIndex = data[0].indexOf("مقدار لیتراژ")
         //const creditKind = data[0].indexOf("نوع تراکنش")
         const isCredit = (element) => element.includes("مقدار تراکنش یارانه");

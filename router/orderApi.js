@@ -4,6 +4,7 @@ const jsonParser = bodyParser.json();
 const router = express.Router()
 const auth = require("../middleware/auth");
 var ObjectID = require('mongodb').ObjectID;
+const ProfileAccess = require('../model/user/ProfileAccess');
 
 const lenzStockSchema = require('../model/Order/stock');
 const ManSchema = require('../model/Order/manufacture');
@@ -1377,19 +1378,27 @@ router.post('/fetch-stock',jsonParser, async (req,res)=>{
     //console.log("FetchStockApi")
     const data = {
         stockOrderNo: req.body.stockOrderNo,
-    } 
+    }  
     try{
         const existOrder = await OrdersSchema.findOne({stockOrderNo:data.stockOrderNo}).lean();
+		if(!existOrder){
+            res.status(400).json({error:true,message:"سفارش پیدا نشد"})
+        }
+		const taskData = await tasks.findOne({orderNo:data.stockOrderNo})
         var stockList = existOrder.stockFaktor
         const userDetail = await userSchema.findOne({_id:ObjectID(existOrder.userId)})
+        const accessData = userDetail.profile?
+        await ProfileAccess.findOne({_id:ObjectID(userDetail.profile)}):''
+        var contractor = (accessData&&accessData.profileName&&
+            accessData.profileName.includes('عامل'))?1:0
         existOrder.userDetail = userDetail
+        if(userDetail.profile)
         for(var i =0;i<stockList.length;i++){
             var stockDetail = await sepidarstock.findOne({sku:stockList[i].sku});
             existOrder.stockFaktor[i].stockDetail = stockDetail
         } 
-        const taskData = await tasks.findOne({orderNo:data.stockOrderNo})
         if(existOrder){
-            res.json({...existOrder,userDetail,taskId:taskData&&taskData._id})
+            res.json({...existOrder,userDetail,contractor,taskData})
         }
         else{
             res.status(500).json({message: "not found"})

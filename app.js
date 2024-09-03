@@ -7,10 +7,8 @@ const apiSepidar = require('./router/sepidarApi')
 const orderPanelApi = require('./router/panelOrderApi')
 const productPanelApi = require('./router/panelProductApi')
 const UserPanelApi = require('./router/panelUserApi')
-
 const CRMPanelApi = require('./router/panelCrmApi')
 const ReportPanelApi = require('./router/panelReportApi')
-
 const apiPayment = require('./router/paymentApi')
 const path = require('path');
 
