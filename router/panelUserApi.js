@@ -103,6 +103,7 @@ router.post('/list',jsonParser,async (req,res)=>{
             userList[i].totalCredit = credit.credit
             userList[i].totalFob = credit.fob
         }
+		var allId = filter1Report.map(item=>item.phone)
        res.json({filter:userList,size:filter1Report.length,allId,
             access:accessUnique,profiles:profiles,classes:classList})
     }
