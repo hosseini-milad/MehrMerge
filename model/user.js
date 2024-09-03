@@ -1,0 +1,63 @@
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+  phone: { type: String, unique: true },
+  cName: { type: String, default: null },
+  cCode:{ type: String, default: null },
+  password: { type: String , default: "123" }, 
+  email: { type: String , default: null },
+  access:{
+    type:String,
+    enum:["manager","sale","security","customer","shop","request"],
+    default:"request"
+  },
+  group: {type:String, default: null },
+  profile:{type:String, default: null },
+  class: {type:Array,default:[]},
+  badget: { type: String , default: 0 },
+  credit: { type: String , default: 0 },
+  credit1: { type: String , default: 0 },
+  credit2: { type: String , default: 0 },
+  remainCredit:{ type: String , default: 0 },
+  fob: { type: String , default: 0 },
+  remainFob:{ type: String , default: 0 },
+  token: { type: String },
+  otp:{ type: String , default: null },
+  sex: { type: String , default: null },
+  mahiat: { type: String , default: null },
+  meli: { type: String , default: null },
+  activity: { type: String , default: null },
+  mobile: { type: String , default: null },
+  address: { type: String , default: null },
+  state: { type: String , default: null },
+  country: { type: String , default: null },
+  city: { type: String , default: null },
+  phone1: { type: String , default: null },
+  fax: { type: String , default: null },
+  avatar:{type:String, default: null },
+  about: { type: String , default: null },
+  state:{ type: String , default: null },
+  date:{ type: String , default: null },
+  remainDate:{ type: Date , default: Date.now() },
+  active:{ type: Boolean , default: false },
+
+  roleId:{ type: String , default: null },
+  birthDay:{ type: String , default: null },
+  clothSize:{ type: String , default: null },
+  call:{ type: String , default: null },
+  urgCall:{ type: String , default: null },
+  contractCall:{ type: String , default: null },
+  zone:{ type: String , default: null },
+  gps:{ type: String , default: null },
+  postalCode: { type: String , default: null },
+  workTime:{ type: String , default: null },
+  imageUrl1:{ type: String , default: null },
+  imageUrl2:{ type: String , default: null },
+  imageUrl3:{ type: String , default: null },
+  meliUrl:{ type: String , default: null },
+  javazUrl:{ type: String , default: null },
+
+  showNotif:{ type: String , default: null }
+});
+
+module.exports = mongoose.model("user", userSchema);
