@@ -74,7 +74,6 @@ router.post('/list',jsonParser,async (req,res)=>{
     dateToEn.setHours(23, 59, 0, 0)
 
     const reportList = await OrderSchema.aggregate([
-	
         {$lookup:{
             from : "users", 
             localField: "userId", 
@@ -123,6 +122,13 @@ router.post('/list',jsonParser,async (req,res)=>{
             (parseInt(offset)+parseInt(data.pageSize)))  
         const brandUnique = [...new Set(filter1Report.map((item) => item.brand))];
         const orderUnique = [...new Set(filter1Report.map((item) => item.stockOrderNo))];
+        
+        for(var i=0;i<orderList.length;i++){
+            var contractorInfo =''
+            if(orderList.contractor)
+                contractorInfo= await UserSchema.findOne({cCode:orderList.contractor})
+            orderList.contractorInfo = contractorInfo 
+        }
 
        res.json({filter:orderList,brand:brandUnique, orderNo:orderUnique,
         cancelOrder:cancelOrder,
