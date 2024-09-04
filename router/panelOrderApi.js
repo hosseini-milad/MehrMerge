@@ -127,8 +127,7 @@ router.post('/list',jsonParser,async (req,res)=>{
             var contractorInfo =''
             if(orderList[i].contractor)
                 contractorInfo= await UserSchema.findOne({cCode:orderList.contractor})
-            else
-                contractorInfo=[{}]
+            
             orderList[i].contractorInfo = contractorInfo 
         }
 
