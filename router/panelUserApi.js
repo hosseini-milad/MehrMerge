@@ -86,7 +86,8 @@ router.post('/list',jsonParser,async (req,res)=>{
             { $match:data.credit?{credit:{$exists:true}}:{}},
             { $match:data.active?data.active=="true"?
                 {active:true}:{active:false}:{}},
-            { $match:data.new?{active:{$exists:false}}:{active:{$exists:true}}},
+            { $match:(data.new&&data.new=="true")?
+                {$and:[{active:false},{access:"request"}]}:{}},
             { $match:data.class?{class:{$elemMatch:{_id:data.class}}}:{}},
             { $match:data.profile?{profile:data.profile}:{}},
         ]) 
