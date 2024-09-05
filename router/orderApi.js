@@ -1393,7 +1393,7 @@ router.post('/fetch-stock',jsonParser, async (req,res)=>{
             accessData.profileName.includes('عامل'))?1:0
         existOrder.userDetail = userDetail
         if(userDetail.profile)
-        for(var i =0;i<stockList.length;i++){
+        for(var i =0;i<stockList&&stockList.length;i++){
             var stockDetail = await sepidarstock.findOne({sku:stockList[i].sku});
             existOrder.stockFaktor[i].stockDetail = stockDetail
         } 
