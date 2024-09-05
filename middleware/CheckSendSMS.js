@@ -11,6 +11,7 @@ const CheckSendSMS=async(status,userId,orderData)=>{
         const orderNo = orderData.stockOrderNo
         const ldDate = orderData.loadDate
         const stockData = orderData.stockFaktor	
+        console.log(ldDate)
         console.log(userId,process.env.acceptOrder,
             orderNo,ldDate&&ldDate.split(' ')[0],await calcWeight(stockData))
 try{ 
