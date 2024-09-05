@@ -220,7 +220,8 @@ router.post('/upload',uploadImg.single('upload'), async(req, res, next)=>{
     let imageBuffer = decodedImg.data;
     let type = decodedImg.type;
     console.log(type)
-    let extension = mime.extension(type);
+    let extension = "xlsx"
+    try{extension = mime.extension(type);}catch{}
     console.log(extension)
     
     let fileName = `Mehr-${Date.now().toString()+"-"+req.body.imgName+"."+extension}`;
