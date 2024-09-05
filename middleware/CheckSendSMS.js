@@ -13,11 +13,11 @@ const CheckSendSMS=async(status,userId,orderData)=>{
         const stockData = orderData.stockFaktor	
         console.log(ldDate)
         console.log(userId,process.env.acceptOrder,
-            orderNo,ldDate&&ldDate.split(' ')[0],await calcWeight(stockData))
+            orderNo,(ldDate&&ldDate.toString().split(' ')[0]),await calcWeight(stockData))
 try{ 
         if(status==="inVehicle"){
             const smsResult = await sendSmsUser(userId,process.env.acceptOrder,
-                orderNo,ldDate&&ldDate.split(' ')[0],await calcWeight(stockData))
+                orderNo,(ldDate&&ldDate.toString().split(' ')[0]),await calcWeight(stockData))
             //console.log("result:","smsResult")
         }
         if(status==="outVehicle"){
