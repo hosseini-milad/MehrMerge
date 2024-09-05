@@ -9,10 +9,9 @@ const CheckSendSMS=async(status,orderData)=>{
     console.log("start checking")
         const userId = orderData.userId.toString()
         const orderNo = orderData.stockOrderNo
-        const ldDate = orderData.loadDate
+        const ldDate = new Date(orderData.loadDate).toLocaleDateString('fa')
         const stockData = orderData.stockFaktor	
-        console.log(userId,process.env.acceptOrder,
-            orderNo,(ldDate&&ldDate.toString().split(' ')[0]),await calcWeight(stockData))
+        
 try{ 
         if(status==="inVehicle"){
             const smsResult = await sendSmsUser(userId,process.env.acceptOrder,
