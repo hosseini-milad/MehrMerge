@@ -213,7 +213,6 @@ router.post('/upload',uploadImg.single('upload'), async(req, res, next)=>{
     if (matches.length !== 3) {
     return new Error('Invalid input string');
     } 
-    console.log("data3")
     response.type = matches[1];
     response.data = new Buffer.from(matches[2], 'base64');
     let decodedImg = response;
@@ -221,6 +220,7 @@ router.post('/upload',uploadImg.single('upload'), async(req, res, next)=>{
     let imageBuffer = decodedImg.data;
     let type = decodedImg.type;
     let extension = mime.extension(type);
+    console.log(extension)
     
     let fileName = `Mehr-${Date.now().toString()+"-"+req.body.imgName+"."+extension}`;
    var upUrl = `/uploads/${folderName}/${fileName}`
