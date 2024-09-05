@@ -296,6 +296,7 @@ router.post('/parse-list',jsonParser,async (req,res)=>{
         const data = workSheetsFromFile[0].data
         const meliCodeIndex = data[0].indexOf("کدملی")!==-1?
             data[0].indexOf("کدملی"):data[0].indexOf("کد ملی")
+        const testData = data[0] + " : index: "+meliCodeIndex
         //const creditIndex = data[0].indexOf("مقدار لیتراژ")
         //const creditKind = data[0].indexOf("نوع تراکنش")
         const isCredit = (element) => element.includes("مقدار تراکنش یارانه");
