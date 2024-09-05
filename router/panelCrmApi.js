@@ -175,7 +175,7 @@ router.post('/update-tasks-status',auth,jsonParser,async (req,res)=>{
                 result:sepidarResult,progressDate:Date.now()}})
         }
 
-         
+        console.log("Milad: ",newStatus)
         const userId=req.headers["userid"]
         const updateOrder = await orders.updateOne({stockOrderNo:taskData.orderNo},
         {$set:{...changes,contractor,cStatus:contractor?"inprogress":"",
