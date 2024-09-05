@@ -176,7 +176,7 @@ router.post('/update-tasks-status',auth,jsonParser,async (req,res)=>{
         }
 
         const userId=req.headers["userid"]
-        const orderData = await orders.updateOne({stockOrderNo:taskData.orderNo})
+        const orderData = await orders.findOne({stockOrderNo:taskData.orderNo})
         const updateOrder = await orders.updateOne({stockOrderNo:taskData.orderNo},
         {$set:{...changes,contractor,cStatus:contractor?"inprogress":"",
             status:newStatus.enTitle}});
