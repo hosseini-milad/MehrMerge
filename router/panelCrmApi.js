@@ -180,7 +180,7 @@ router.post('/update-tasks-status',auth,jsonParser,async (req,res)=>{
         const updateOrder = await orders.updateOne({stockOrderNo:taskData.orderNo},
         {$set:{...changes,contractor,cStatus:contractor?"inprogress":"",
             status:newStatus.enTitle}});
-        await CheckSendSMS(newStatus.enTitle,taskData.userId,orderData)
+        await CheckSendSMS(newStatus.enTitle,orderData)
         //console.log(updateOrder)
         const tasksList = await calcTasks(userId,crmCode)
        res.json({taskData:tasksList,message:taskId?"Task Updated":"Task Created",

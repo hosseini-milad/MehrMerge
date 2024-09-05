@@ -5,13 +5,12 @@ const sepidarstock = require("../model/Order/sepidarstock");
 const logSchema = require("../model/Params/logs");
 var ObjectID = require('mongodb').ObjectID;
 
-const CheckSendSMS=async(status,userId,orderData)=>{
+const CheckSendSMS=async(status,orderData)=>{
     console.log("start checking")
-    
+        const userId = orderData.userId
         const orderNo = orderData.stockOrderNo
         const ldDate = orderData.loadDate
         const stockData = orderData.stockFaktor	
-        console.log(ldDate)
         console.log(userId,process.env.acceptOrder,
             orderNo,(ldDate&&ldDate.toString().split(' ')[0]),await calcWeight(stockData))
 try{ 
