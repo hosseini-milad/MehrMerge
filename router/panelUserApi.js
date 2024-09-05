@@ -207,11 +207,9 @@ router.post('/upload',uploadImg.single('upload'), async(req, res, next)=>{
     const folderName = req.body.folderName?req.body.folderName:"temp"
     try{
         const data = (req.body.base64image)
-        console.log("data1")
     // to declare some path to store your converted image
     var matches = await data.match(/^data:([A-Za-z-+./]+);base64,(.+)$/),
     response = {};
-    console.log("data2")
     if (matches.length !== 3) {
     return new Error('Invalid input string');
     } 
@@ -219,6 +217,7 @@ router.post('/upload',uploadImg.single('upload'), async(req, res, next)=>{
     response.type = matches[1];
     response.data = new Buffer.from(matches[2], 'base64');
     let decodedImg = response;
+    console.log("data4")
     let imageBuffer = decodedImg.data;
     let type = decodedImg.type;
     let extension = mime.extension(type);
