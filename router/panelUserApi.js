@@ -222,6 +222,7 @@ router.post('/upload',uploadImg.single('upload'), async(req, res, next)=>{
     
     let fileName = `Mehr-${Date.now().toString()+"-"+req.body.imgName+"."+extension}`;
    var upUrl = `/uploads/${folderName}/${fileName}`
+   console.log(upUrl)
     fs.writeFileSync("."+upUrl, imageBuffer, 'utf8');
     return res.send({"status":"success",url:upUrl});
     } catch (e) {
