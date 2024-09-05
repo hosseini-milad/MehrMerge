@@ -1,12 +1,12 @@
 const sendSmsUser = require("../AdminPanel/components/sendSms");
-const Cart = require("../model/Order/Cart");
-const orders = require("../model/Order/orders");
+
 const sepidarstock = require("../model/Order/sepidarstock");
-const user = require("../model/user");
+
 const logSchema = require("../model/Params/logs");
 var ObjectID = require('mongodb').ObjectID;
 
 const CheckSendSMS=async(status,userId,orderData)=>{
+    console.log("start checking")
     try{ 
         const orderNo = orderData.stockOrderNo
         const ldDate = orderData.loadDate
@@ -14,7 +14,7 @@ const CheckSendSMS=async(status,userId,orderData)=>{
         console.log(status)
         console.log(userId,process.env.acceptOrder,
             orderNo,ldDate.split(' ')[0],await calcWeight(stockData))
-            
+
         if(status==="inVehicle"){
             const smsResult = await sendSmsUser(userId,process.env.acceptOrder,
                 orderNo,ldDate.split(' ')[0],await calcWeight(stockData))

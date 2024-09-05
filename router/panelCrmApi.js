@@ -175,12 +175,11 @@ router.post('/update-tasks-status',auth,jsonParser,async (req,res)=>{
                 result:sepidarResult,progressDate:Date.now()}})
         }
 
-        console.log("Milad: ",newStatus)
         const userId=req.headers["userid"]
         const updateOrder = await orders.updateOne({stockOrderNo:taskData.orderNo},
         {$set:{...changes,contractor,cStatus:contractor?"inprogress":"",
             status:newStatus.enTitle}});
-        await CheckSendSMS(newStatus,taskData.userId,updateOrder)
+        await CheckSendSMS(newStatus.enTitle,taskData.userId,updateOrder)
         //console.log(updateOrder)
         const tasksList = await calcTasks(userId,crmCode)
        res.json({taskData:tasksList,message:taskId?"Task Updated":"Task Created",
