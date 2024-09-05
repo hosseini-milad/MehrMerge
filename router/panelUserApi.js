@@ -220,7 +220,7 @@ router.post('/upload',uploadImg.single('upload'), async(req, res, next)=>{
     let type = decodedImg.type;
     let extension = mime.extension(type);
     
-    let fileName = `MGM-${Date.now().toString()+"-"+req.body.imgName+"."+extension}`;
+    let fileName = `Mehr-${Date.now().toString()+"-"+req.body.imgName+"."+extension}`;
    var upUrl = `/uploads/${folderName}/${fileName}`
     fs.writeFileSync("."+upUrl, imageBuffer, 'utf8');
     return res.send({"status":"success",url:upUrl});
