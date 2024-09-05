@@ -7,7 +7,7 @@ var ObjectID = require('mongodb').ObjectID;
 
 const CheckSendSMS=async(status,orderData)=>{
     console.log("start checking")
-        const userId = orderData.userId
+        const userId = orderData.userId.toString()
         const orderNo = orderData.stockOrderNo
         const ldDate = orderData.loadDate
         const stockData = orderData.stockFaktor	
