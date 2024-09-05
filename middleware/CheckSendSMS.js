@@ -7,13 +7,14 @@ const logSchema = require("../model/Params/logs");
 var ObjectID = require('mongodb').ObjectID;
 
 const CheckSendSMS=async(status,userId,orderData)=>{
-    console.log(status)
-    console.log(userId,process.env.acceptOrder,
-        orderNo,ldDate.split(' ')[0],await calcWeight(stockData))
     try{ 
         const orderNo = orderData.stockOrderNo
         const ldDate = orderData.loadDate
         const stockData = orderData.stockFaktor	
+        console.log(status)
+        console.log(userId,process.env.acceptOrder,
+            orderNo,ldDate.split(' ')[0],await calcWeight(stockData))
+            
         if(status==="inVehicle"){
             const smsResult = await sendSmsUser(userId,process.env.acceptOrder,
                 orderNo,ldDate.split(' ')[0],await calcWeight(stockData))
