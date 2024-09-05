@@ -219,6 +219,7 @@ router.post('/upload',uploadImg.single('upload'), async(req, res, next)=>{
     console.log("data4")
     let imageBuffer = decodedImg.data;
     let type = decodedImg.type;
+    console.log(type)
     let extension = mime.extension(type);
     console.log(extension)
     
