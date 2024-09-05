@@ -16,6 +16,7 @@ const {TaxRate} = process.env
 const cart = require('../model/Order/orders');
 const sepidarPOST = require('../middleware/SepidarPost');
 const orders = require('../model/Order/orders');
+const CheckSendSMS = require('../middleware/CheckSendSMS');
 //const customers = require('../model/auth/customers');
 
 router.post('/fetch-crm',jsonParser,async (req,res)=>{
@@ -160,25 +161,12 @@ router.post('/update-tasks-status',auth,jsonParser,async (req,res)=>{
         res.status(400).json({message:"مشکلی رخ داده است",error:true})
 		return
     }
-    console.log(newStatus)
     try{
         var sepidarAccept = 1
         var sepidarQuery = ''
         var sepidarResult = ''
         var userData = ''
         var adminData = ''
-        if(status==="sepidar"){
-            const faktorNo= "F123"+taskData.orderNo
-            const cartData = await cart.findOne({cartNo:taskData.orderNo})
-            userData = await customers.findOne({_id:ObjectID(cartData.userId)})
-            adminData = await user.findOne({_id:ObjectID(cartData.manageId)})
-            sepidarQuery = await SepidarFunc(cartData,faktorNo,
-                userData.CustomerID?userData.CustomerID:adminData.CustomerID,adminData.StockId)
-            sepidarResult = await sepidarPOST(sepidarQuery,"/api/invoices",adminData._id)
-            
-            if(sepidarResult.Message)
-                sepidarAccept =1
-        }
         //console.log(sepidarResult)
         //console.log(sepidarQuery)
         if(sepidarAccept){
@@ -192,6 +180,7 @@ router.post('/update-tasks-status',auth,jsonParser,async (req,res)=>{
         const updateOrder = await orders.updateOne({stockOrderNo:taskData.orderNo},
         {$set:{...changes,contractor,cStatus:contractor?"inprogress":"",
             status:newStatus.enTitle}});
+        await CheckSendSMS(newStatus,taskData.userId,updateOrder)
         //console.log(updateOrder)
         const tasksList = await calcTasks(userId,crmCode)
        res.json({taskData:tasksList,message:taskId?"Task Updated":"Task Created",
