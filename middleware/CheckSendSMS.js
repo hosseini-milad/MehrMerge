@@ -16,7 +16,7 @@ const CheckSendSMS=async(status,userId,orderData)=>{
 try{ 
         if(status==="inVehicle"){
             const smsResult = await sendSmsUser(userId,process.env.acceptOrder,
-                orderNo,ldDate.split(' ')[0],await calcWeight(stockData))
+                orderNo,ldDate&&ldDate.split(' ')[0],await calcWeight(stockData))
             //console.log("result:","smsResult")
         }
         if(status==="outVehicle"){
