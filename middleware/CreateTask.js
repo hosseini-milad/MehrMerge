@@ -16,7 +16,7 @@ const CreateTask=async(type,data)=>{
         orderNo:data.stockOrderNo,
         prior:1,
         type:type,
-        date:new Date.now()
+        date: Date.now()
     })
     return({message:"Task Created"})
 }
