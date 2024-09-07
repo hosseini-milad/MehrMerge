@@ -767,7 +767,7 @@ router.post('/addstock',jsonParser, auth,async (req,res)=>{
     data.group = userData.group
     //console.log(data)
 
-        try{const taskData = await CreateTask("order",data,userData&&userData.cName)} catch{}
+        try{const taskData = await CreateTask("order",data,(userData&&userData.cName))} catch{}
         const stockData = await OrdersSchema.create(data)//{_id:req.body.id},{$set:data})
         await sendSmsUser(data.userId,process.env.regOrder,".","rxOrderNo",data.status)
         res.json({stock:stockData,task:taskData,message:"order register"})
