@@ -10,6 +10,7 @@ const taskSchema = new mongoose.Schema({
   profile:{type:String},
   creator:{type:String},
   customer:{type:String},
+  cName:{type:String},
   orderNo:{type:String},
   done:{type:Boolean, default:false},
   cancel:{type:Boolean, default:false},
