@@ -12,7 +12,7 @@ const CreateTask=async(type,data,cName)=>{
         content:data.description,
         creator: data.manageId,
         customer: data.userId,
-        cName:cName,
+        cName:cName.cName?cName.cName:cName,
         taskStep:step.enTitle,
         orderNo:data.stockOrderNo,
         prior:1,
