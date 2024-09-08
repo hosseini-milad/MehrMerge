@@ -210,6 +210,8 @@ const findNext=(index,status)=>{
 	if(status=="contractor"){
         return(-1)
     }
+    else
+        return(index+1)
 }
 router.post('/update-checkList',auth,jsonParser,async (req,res)=>{
     const taskId = req.body._id?req.body._id:""
