@@ -195,7 +195,7 @@ const findNext=(index,status)=>{
         return(1)
     }
     if(status=="inVehicle"){
-        return(1)
+        return(2)
     }
     if(status=="saleControl"){
         return(3)
