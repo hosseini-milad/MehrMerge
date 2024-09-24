@@ -17,6 +17,7 @@ const MirrorSchema = require('../model/products/mirror');
 const CoverSchema = require('../model/products/cover');
 const XtraSchema = require('../model/products/xtra');
 const userSchema = require('../model/user');
+const CreditSchema = require('../model/user/credit');
 const KharidSchema = require('../model/Order/Kharid')
 const userInfo = require('../model/userInfo');
 const transferMethod = require('../model/products/transferMethod');
@@ -1734,28 +1735,40 @@ router.get('/cartside', async (req, res) => {
     const paymentData = await paymentMethod.find().sort({ "sort": 1 });
     res.json({ transferMethod: transData, paymentMethod: paymentData })
 })
-
-router.post('/inqueryCredit', auth, async (req, res) => {
-    const data = {
-        mobile: req?.user?.mobile ?? "test",
-        tafsili: req?.user?.tafsili ?? "test"
-    }
+// اسنعلام مانده اعتبار برای کنترل کلاینت در زمان ثبت سفارش
+router.get('/inqueryCredit', auth, async (req, res) => {
     try {
-        const token = await getToken()
-
-        const credit = new CallApi(token).post("inqueryAddress", data)
-        if (!credit.IsSuccess) {
-            res.status(500).json({ message: credit.Message })
+        const { phone } = req.user
+        const objBody = {
+            configId: 4,
+            input: {
+                mobile: phone,
+                type:1
+            }
         }
 
-        const updateResponse = await user.updateOne({ userId }, { $set: { credit } })
+        const token = await getToken()
+
+        const credit = await new CallApi(token).post("request", objBody)
+        if (!credit.isSuccess) {
+            throw new Error(credit.message)
+        }
+
+        const balance = credit.data?.result[0]?.Balance
+        if (!balance) {
+            throw new Error("اعتباری برای شما وجود ندارد")
+        }
+
+        const updateResponse = await CreditSchema.updateOne({ phone }, { $set: { credit: balance } }, { upsert: true })
         if (!updateResponse.acknowledged)
             res.status(500).json({ message: 'خطا در بروز رسانی پایگاه داده' })
 
-        res.json({ credit })
+        return res.json({ balance })
     }
     catch (error) {
-        res.status(500).json({ message: error.message })
+        if (error.message.includes("ETIMEDOUT"))
+            return res.status(500).json({ message: "دسترسی به سامانه استعلام اعتبار قطع می باشد" })
+        return res.status(500).json({ message: error.message })
     }
 })
 
@@ -1805,7 +1818,7 @@ async function getToken() {
     const token = await axios(config)
         .then(response => { return response.data })
         .catch(error => {
-            throw new Error(error.response.data.Message)
+            throw new Error(error.response?.data?.Message ?? error.message)
         })
 
     return token.access_token
